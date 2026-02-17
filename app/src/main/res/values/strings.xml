@@ -1,9 +1,9 @@
 <resources>
-    <string name="app_name">Proxidize Android Legacy</string>
+    <string name="app_name">HomeProxy</string>
     <string name="_4g_proxy_solutions">4G Proxy Solutions</string>
 
     <!-- Strings related to login -->
-    <string name="app_lb">Proxidize</string>
+    <string name="app_lb">HomeProxy</string>
     <string name="action_sign_in_short">Sign in</string>
     <string name="error_invalid_email">This email address is invalid</string>
     <string name="error_field_required">This field is required</string>
@@ -33,7 +33,7 @@
     <string name="copy_proxy_to_clipboard">Copy Proxy To Clipboard</string>
     <string name="your_proxy_connection_details">Your Proxy Connection Details:</string>
     <string name="exit">Exit</string>
-    <string name="learn_about_mobile_proxies_on_proxidize_com">Learn about mobile proxies on proxidize.com</string>
+    <string name="learn_about_mobile_proxies_on_proxidize_com">HomeProxy - Standalone Mobile Proxy</string>
     <string name="connected">Connected</string>
     <string name="save">Save</string>
     <string name="reset">Reset</string>

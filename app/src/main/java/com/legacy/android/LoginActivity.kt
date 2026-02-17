@@ -195,8 +195,7 @@ class LoginActivity : AppCompatActivity() {
                             .setColor(Color.YELLOW).build()
                         notificationManager?.notify(NOTIFICATION_ID, notification)
                     }, 2000)
-                    val servicesIntent = Intent(applicationContext, NotificationService::class.java)
-                    servicesIntent.putExtra("stat", "Proxidize Android is running!!")
+                    servicesIntent.putExtra("stat", "HomeProxy is running!!")
                     startService(servicesIntent)
                 }
                 br.close()
@@ -221,9 +220,10 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun showConnectionDetails() {
-        mText = "${server.host}:$mRandomPort:$user:$pwd"
+        val portRange = "$mRandomPort - ${mRandomPort + 14}"
+        mText = "${server.host}:$portRange:$user:$pwd"
         val details =
-            "<b>IP</b> : ${server.host}<br><b>Port</b> : $mRandomPort<br><b>Username</b> : $user<br><b>Password</b> : $pwd"
+            "<b>IP</b> : ${server.host}<br><b>Ports</b> : $portRange (15 endpoints)<br><b>Username</b> : $user<br><b>Password</b> : $pwd"
         binding.connection.text = mText
         binding.connectionTextView.text = Html.fromHtml(details)
         binding.connect.text = getString(R.string.connected)
@@ -293,12 +293,15 @@ class LoginActivity : AppCompatActivity() {
             out.write("tcp_mux = true\r\n".toByteArray())
             out.write("login_fail_exit = true\r\n".toByteArray())
             out.write("protocol = tcp\r\n".toByteArray())
-            out.write("[android_proxy_$mRandomPort]\r\n".toByteArray())
-            out.write("type=tcp\r\n".toByteArray())
-            out.write("remote_port=$mRandomPort\r\n".toByteArray())
-            out.write("plugin=http_proxy\r\n".toByteArray())
-            out.write("plugin_http_user=$user\r\n".toByteArray())
-            out.write("plugin_http_passwd=$pwd\r\n".toByteArray())
+            for (i in 0 until 15) {
+                val currentPort = mRandomPort + i
+                out.write("[android_proxy_$currentPort]\r\n".toByteArray())
+                out.write("type=tcp\r\n".toByteArray())
+                out.write("remote_port=$currentPort\r\n".toByteArray())
+                out.write("plugin=http_proxy\r\n".toByteArray())
+                out.write("plugin_http_user=$user\r\n".toByteArray())
+                out.write("plugin_http_passwd=$pwd\r\n".toByteArray())
+            }
         } catch (e: IOException) {
             e.printStackTrace()
         } finally {
