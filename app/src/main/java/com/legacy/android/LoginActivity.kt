@@ -111,7 +111,6 @@ class LoginActivity : AppCompatActivity() {
         val logfile = File(filesDir, MyApplication.LOGFILE)
         if (logfile.exists()) {
             try {
-                val inputStream: InputStream = assets.open(MyApplication.LOGFILE)
                 var line: String? = null
                 val br = BufferedReader(FileReader(logfile))
                 var isFileEmpty = true
@@ -143,6 +142,7 @@ class LoginActivity : AppCompatActivity() {
                     }
                     Toast.makeText(this@LoginActivity, "connection success", Toast.LENGTH_LONG)
                         .show()
+                    val servicesIntent = Intent(this, NotificationService::class.java)
                     Handler(Looper.getMainLooper()).postDelayed({
                         val sdf = SimpleDateFormat("HH:mm:ss z")
                         val currentTime = sdf.format(Date())
@@ -199,7 +199,6 @@ class LoginActivity : AppCompatActivity() {
                     startService(servicesIntent)
                 }
                 br.close()
-                inputStream.close()
             } catch (e: IOException) {
                 e.printStackTrace()
             }
