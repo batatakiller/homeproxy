@@ -93,11 +93,22 @@ class LoginActivity : AppCompatActivity() {
                 .show()
         }
         binding.connect.setOnClickListener {
-            writeToConfigFile(server)
-            Toast.makeText(this@LoginActivity, "Connecting to proxy server", Toast.LENGTH_LONG)
-                .show()
-            startConnection()
-            Handler(Looper.getMainLooper()).postDelayed({ checkIfPortUsed() }, 3000)
+            lifecycleScope.launch {
+                binding.connect.isEnabled = false
+                Toast.makeText(this@LoginActivity, "Connecting to proxy server...", Toast.LENGTH_LONG).show()
+                
+                // 1. Write config (sequential/suspend)
+                writeToConfigFile(server)
+                
+                // 2. Start connection
+                startConnection()
+                
+                // 3. UI updates and port checks
+                Handler(Looper.getMainLooper()).postDelayed({ 
+                    checkIfPortUsed()
+                    binding.connect.isEnabled = true
+                }, 3000)
+            }
         }
 
         binding.customServer.setOnClickListener{
@@ -248,7 +259,7 @@ class LoginActivity : AppCompatActivity() {
         return null
     }
 
-    private fun writeToConfigFile(server: ProxyServer) {
+    private suspend fun writeToConfigFile(server: ProxyServer) = withContext(Dispatchers.IO) {
         // re-create connection.log file
         val logFile = File(filesDir, MyApplication.LOGFILE)
         if (logFile.exists()) {
@@ -276,57 +287,58 @@ class LoginActivity : AppCompatActivity() {
         try {
             out = FileOutputStream(file, true)
             
-            // Check for persisted credentials
-            lifecycleScope.launch(Dispatchers.IO) {
-                val (savedUser, savedPass, savedPort) = preference.getCredentials()
-                
-                if (savedUser != null && savedPass != null && savedPort != null) {
-                    user = savedUser
-                    pwd = savedPass
-                    mRandomPort = savedPort
-                } else {
-                    mRandomPort = getRandomPort()
-                    user = getAlphaNumericString()
-                    pwd = getAlphaNumericString()
-                    // Save for next time
-                    preference.saveCredentials(user!!, pwd!!, mRandomPort)
-                }
+            // 1. Check for persisted credentials (synchronous in this scope)
+            val (savedUser, savedPass, savedPort) = preference.getCredentials()
+            
+            if (savedUser != null && savedPass != null && savedPort != null) {
+                user = savedUser
+                pwd = savedPass
+                mRandomPort = savedPort
+            } else {
+                mRandomPort = getRandomPort()
+                user = getAlphaNumericString()
+                pwd = getAlphaNumericString()
+                // Save for next time
+                preference.saveCredentials(user!!, pwd!!, mRandomPort)
+            }
 
-                val outStream = out 
-                outStream?.let { it ->
-                    it.write("[common]\r\n".toByteArray())
-                    it.write("server_addr = ${server.host}\r\n".toByteArray())
-                    it.write("server_port = ${server.port}\r\n".toByteArray())
-                    it.write("token = ${server.token}\r\n".toByteArray())
-                    it.write("admin_addr = 0.0.0.0\r\n".toByteArray())
-                    it.write("admin_port = 7400\r\n".toByteArray())
-                    it.write("admin_user = admin\r\n".toByteArray())
-                    it.write("admin_passwd = admin\r\n".toByteArray())
-                    it.write("log_file = ${logFile.absolutePath}\r\n".toByteArray())
-                    it.write("log_level = info\r\n".toByteArray())
-                    it.write("log_max_days = 3\r\n".toByteArray())
-                    it.write("pool_count = 5\r\n".toByteArray())
-                    it.write("tcp_mux = true\r\n".toByteArray())
-                    it.write("login_fail_exit = true\r\n".toByteArray())
-                    it.write("protocol = tcp\r\n".toByteArray())
-                    for (i in 0 until 15) {
-                        val currentPort = mRandomPort + i
-                        it.write("[android_proxy_$currentPort]\r\n".toByteArray())
-                        it.write("type=tcp\r\n".toByteArray())
-                        it.write("remote_port=$currentPort\r\n".toByteArray())
-                        it.write("plugin=http_proxy\r\n".toByteArray())
-                        it.write("plugin_http_user=$user\r\n".toByteArray())
-                        it.write("plugin_http_passwd=$pwd\r\n".toByteArray())
-                    }
-                }
-                try {
-                    out?.close()
-                } catch (e: IOException) {
-                    e.printStackTrace()
+            // 2. Write the file
+            out.let { it ->
+                it.write("[common]\r\n".toByteArray())
+                it.write("server_addr = ${server.host}\r\n".toByteArray())
+                it.write("server_port = ${server.port}\r\n".toByteArray())
+                it.write("token = ${server.token}\r\n".toByteArray())
+                it.write("admin_addr = 0.0.0.0\r\n".toByteArray())
+                it.write("admin_port = 7400\r\n".toByteArray())
+                it.write("admin_user = admin\r\n".toByteArray())
+                it.write("admin_passwd = admin\r\n".toByteArray())
+                it.write("log_file = ${logFile.absolutePath}\r\n".toByteArray())
+                it.write("log_level = info\r\n".toByteArray())
+                it.write("log_max_days = 3\r\n".toByteArray())
+                it.write("pool_count = 5\r\n".toByteArray())
+                it.write("tcp_mux = true\r\n".toByteArray())
+                it.write("login_fail_exit = true\r\n".toByteArray())
+                it.write("protocol = tcp\r\n".toByteArray())
+                for (i in 0 until 15) {
+                    val currentPort = mRandomPort + i
+                    it.write("[android_proxy_$currentPort]\r\n".toByteArray())
+                    it.write("type=tcp\r\n".toByteArray())
+                    it.write("remote_port=$currentPort\r\n".toByteArray())
+                    it.write("plugin=http_proxy\r\n".toByteArray())
+                    it.write("plugin_http_user=$user\r\n".toByteArray())
+                    it.write("plugin_http_passwd=$pwd\r\n".toByteArray())
                 }
             }
+            // Ensure data is flushed to disk
+            out.flush()
         } catch (e: IOException) {
             e.printStackTrace()
+        } finally {
+            try {
+                out?.close()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
         }
     }
 
