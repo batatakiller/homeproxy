@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 class ServerPreference private constructor(private val context: Context) {
@@ -26,6 +27,14 @@ class ServerPreference private constructor(private val context: Context) {
         )
     }
 
+    suspend fun getCredentials(): Triple<String?, String?, Int?> {
+        val pref = context.dataStore.data.first()
+        val user = pref[stringPreferencesKey("proxy_user")]
+        val pass = pref[stringPreferencesKey("proxy_pass")]
+        val port = pref[stringPreferencesKey("proxy_port")]?.toIntOrNull()
+        return Triple(user, pass, port)
+    }
+
 
     suspend fun clear() {
         context.dataStore.edit { it.clear() }
@@ -36,6 +45,14 @@ class ServerPreference private constructor(private val context: Context) {
             pref[stringPreferencesKey("host")] = device.host
             pref[stringPreferencesKey("port")] = device.port
             pref[stringPreferencesKey("token")] = device.token
+        }
+    }
+
+    suspend fun saveCredentials(user: String, pass: String, port: Int) {
+        context.dataStore.edit { pref ->
+            pref[stringPreferencesKey("proxy_user")] = user
+            pref[stringPreferencesKey("proxy_pass")] = pass
+            pref[stringPreferencesKey("proxy_port")] = port.toString()
         }
     }
 
