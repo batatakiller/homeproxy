@@ -20,12 +20,21 @@ class CustomServerActivity : AppCompatActivity() {
             if (isClear()) {
                 Toast.makeText(this, "Saving server info", Toast.LENGTH_SHORT).show()
                 lifecycleScope.launch {
+                    val startingPort = binding.etStartingPort.text.toString().toIntOrNull()
+                        ?: ProxyServer.DEFAULT_STARTING_PORT
                     preference.saveProxyServer(
                         ProxyServer(
                             binding.etHost.text.toString(),
                             binding.etPort.text.toString(),
-                            binding.etToken.text.toString()
+                            binding.etToken.text.toString(),
+                            startingPort
                         )
+                    )
+                    // Clear old credentials so they regenerate with the new port
+                    preference.saveCredentials(
+                        getAlphaNumericString(),
+                        getAlphaNumericString(),
+                        startingPort
                     )
                     finish()
                 }
@@ -56,6 +65,10 @@ class CustomServerActivity : AppCompatActivity() {
             binding.etToken.error = "Enter a valid token"
             clear = false
         } else binding.etToken.error = null
+        if (binding.etStartingPort.text.isNullOrEmpty()) {
+            binding.etStartingPort.error = "Enter starting port (e.g. 28199)"
+            clear = false
+        } else binding.etStartingPort.error = null
         return clear
     }
 }

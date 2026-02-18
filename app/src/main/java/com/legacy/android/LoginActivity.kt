@@ -96,15 +96,15 @@ class LoginActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 binding.connect.isEnabled = false
                 Toast.makeText(this@LoginActivity, "Connecting to proxy server...", Toast.LENGTH_LONG).show()
-                
-                // 1. Write config (sequential/suspend)
+
+                // 1. Write config (sequential - waits for completion)
                 writeToConfigFile(server)
-                
+
                 // 2. Start connection
                 startConnection()
-                
+
                 // 3. UI updates and port checks
-                Handler(Looper.getMainLooper()).postDelayed({ 
+                Handler(Looper.getMainLooper()).postDelayed({
                     checkIfPortUsed()
                     binding.connect.isEnabled = true
                 }, 3000)
@@ -114,8 +114,6 @@ class LoginActivity : AppCompatActivity() {
         binding.customServer.setOnClickListener{
             startActivity(Intent(this, CustomServerActivity::class.java))
         }
-
-
     }
 
     private fun checkIfPortUsed(): Boolean {
@@ -221,13 +219,26 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        val notification = getActiveNotification() ?: return
-        val extras = notification.extras
-        pwd = extras.getString(PASS)
-        user = extras.getString(USER)
-        mRandomPort = extras.getInt(PORT)
-        showConnectionDetails()
-
+        // First try to restore from notification (app still running)
+        val notification = getActiveNotification()
+        if (notification != null) {
+            val extras = notification.extras
+            pwd = extras.getString(PASS)
+            user = extras.getString(USER)
+            mRandomPort = extras.getInt(PORT)
+            showConnectionDetails()
+            return
+        }
+        // Fallback: load from DataStore (app was closed and reopened)
+        lifecycleScope.launch {
+            val (savedUser, savedPass, savedPort) = preference.getCredentials()
+            if (savedUser != null && savedPass != null && savedPort != null) {
+                user = savedUser
+                pwd = savedPass
+                mRandomPort = savedPort
+                showConnectionDetails()
+            }
+        }
     }
 
     private fun showConnectionDetails() {
@@ -286,23 +297,23 @@ class LoginActivity : AppCompatActivity() {
         }
         try {
             out = FileOutputStream(file, true)
-            
-            // 1. Check for persisted credentials (synchronous in this scope)
+
+            // 1. Load persisted credentials
             val (savedUser, savedPass, savedPort) = preference.getCredentials()
-            
+
             if (savedUser != null && savedPass != null && savedPort != null) {
                 user = savedUser
                 pwd = savedPass
                 mRandomPort = savedPort
             } else {
-                mRandomPort = getRandomPort()
+                // Use the server's configured starting port instead of random
+                mRandomPort = server.startingPort
                 user = getAlphaNumericString()
                 pwd = getAlphaNumericString()
-                // Save for next time
                 preference.saveCredentials(user!!, pwd!!, mRandomPort)
             }
 
-            // 2. Write the file
+            // 2. Write config file
             out.let { it ->
                 it.write("[common]\r\n".toByteArray())
                 it.write("server_addr = ${server.host}\r\n".toByteArray())
@@ -329,7 +340,6 @@ class LoginActivity : AppCompatActivity() {
                     it.write("plugin_http_passwd=$pwd\r\n".toByteArray())
                 }
             }
-            // Ensure data is flushed to disk
             out.flush()
         } catch (e: IOException) {
             e.printStackTrace()

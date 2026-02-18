@@ -23,7 +23,9 @@ class ServerPreference private constructor(private val context: Context) {
         if (pref[stringPreferencesKey("host")].isNullOrBlank()) return ProxyServer.default()
         return ProxyServer(
             pref[stringPreferencesKey("host")] ?: "",
-            pref[stringPreferencesKey("port")] ?: "", pref[stringPreferencesKey("token")] ?: ""
+            pref[stringPreferencesKey("port")] ?: "",
+            pref[stringPreferencesKey("token")] ?: "",
+            pref[stringPreferencesKey("starting_port")]?.toIntOrNull() ?: ProxyServer.DEFAULT_STARTING_PORT
         )
     }
 
@@ -45,6 +47,7 @@ class ServerPreference private constructor(private val context: Context) {
             pref[stringPreferencesKey("host")] = device.host
             pref[stringPreferencesKey("port")] = device.port
             pref[stringPreferencesKey("token")] = device.token
+            pref[stringPreferencesKey("starting_port")] = device.startingPort.toString()
         }
     }
 
@@ -65,4 +68,3 @@ class ServerPreference private constructor(private val context: Context) {
         }
     }
 }
-
