@@ -28,6 +28,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -291,42 +292,41 @@ class LoginActivity : AppCompatActivity() {
                     preference.saveCredentials(user!!, pwd!!, mRandomPort)
                 }
 
-                withContext(Dispatchers.IO) {
-                    val outStream = out // handle nullability if needed, but it's already inside try-catch
-                    outStream?.let {
-                        it.write("[common]\r\n".toByteArray())
-                        it.write("server_addr = ${server.host}\r\n".toByteArray())
-                        it.write("server_port = ${server.port}\r\n".toByteArray())
-                        it.write("token = ${server.token}\r\n".toByteArray())
-                        it.write("admin_addr = 0.0.0.0\r\n".toByteArray())
-                        it.write("admin_port = 7400\r\n".toByteArray())
-                        it.write("admin_user = admin\r\n".toByteArray())
-                        it.write("admin_passwd = admin\r\n".toByteArray())
-                        it.write("log_file = ${logFile.absolutePath}\r\n".toByteArray())
-                        it.write("log_level = info\r\n".toByteArray())
-                        it.write("log_max_days = 3\r\n".toByteArray())
-                        it.write("pool_count = 5\r\n".toByteArray())
-                        it.write("tcp_mux = true\r\n".toByteArray())
-                        it.write("login_fail_exit = true\r\n".toByteArray())
-                        it.write("protocol = tcp\r\n".toByteArray())
-                        for (i in 0 until 15) {
-                            val currentPort = mRandomPort + i
-                            it.write("[android_proxy_$currentPort]\r\n".toByteArray())
-                            it.write("type=tcp\r\n".toByteArray())
-                            it.write("remote_port=$currentPort\r\n".toByteArray())
-                            it.write("plugin=http_proxy\r\n".toByteArray())
-                            it.write("plugin_http_user=$user\r\n".toByteArray())
-                            it.write("plugin_http_passwd=$pwd\r\n".toByteArray())
-                        }
+                val outStream = out 
+                outStream?.let { it ->
+                    it.write("[common]\r\n".toByteArray())
+                    it.write("server_addr = ${server.host}\r\n".toByteArray())
+                    it.write("server_port = ${server.port}\r\n".toByteArray())
+                    it.write("token = ${server.token}\r\n".toByteArray())
+                    it.write("admin_addr = 0.0.0.0\r\n".toByteArray())
+                    it.write("admin_port = 7400\r\n".toByteArray())
+                    it.write("admin_user = admin\r\n".toByteArray())
+                    it.write("admin_passwd = admin\r\n".toByteArray())
+                    it.write("log_file = ${logFile.absolutePath}\r\n".toByteArray())
+                    it.write("log_level = info\r\n".toByteArray())
+                    it.write("log_max_days = 3\r\n".toByteArray())
+                    it.write("pool_count = 5\r\n".toByteArray())
+                    it.write("tcp_mux = true\r\n".toByteArray())
+                    it.write("login_fail_exit = true\r\n".toByteArray())
+                    it.write("protocol = tcp\r\n".toByteArray())
+                    for (i in 0 until 15) {
+                        val currentPort = mRandomPort + i
+                        it.write("[android_proxy_$currentPort]\r\n".toByteArray())
+                        it.write("type=tcp\r\n".toByteArray())
+                        it.write("remote_port=$currentPort\r\n".toByteArray())
+                        it.write("plugin=http_proxy\r\n".toByteArray())
+                        it.write("plugin_http_user=$user\r\n".toByteArray())
+                        it.write("plugin_http_passwd=$pwd\r\n".toByteArray())
                     }
+                }
+                try {
+                    out?.close()
+                } catch (e: IOException) {
+                    e.printStackTrace()
                 }
             }
         } catch (e: IOException) {
             e.printStackTrace()
-        } finally {
-            // Note: closing 'out' here might be problematic since it's used inside the coroutine.
-            // However, the original code had 'out' being closed in finally.
-            // To maintain safety with coroutines, I'll move the closing logic inside the coroutine or ensure sequential execution.
         }
     }
 
