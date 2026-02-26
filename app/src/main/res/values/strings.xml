@@ -1,14 +1,13 @@
 <resources>
     <string name="app_name">HomeProxy</string>
-    <string name="_4g_proxy_solutions">4G Proxy Solutions</string>
+    <string name="_4g_proxy_solutions">Soluções de Proxy 4G</string>
 
     <!-- Strings related to login -->
     <string name="app_lb">HomeProxy</string>
-    <string name="action_sign_in_short">Sign in</string>
-    <string name="error_invalid_email">This email address is invalid</string>
-    <string name="error_field_required">This field is required</string>
-    <string name="permission_rationale">"Contacts permissions are needed for providing email
-        completions."
+    <string name="action_sign_in_short">Entrar</string>
+    <string name="error_invalid_email">Este endereço de e-mail é inválido</string>
+    <string name="error_field_required">Este campo é obrigatório</string>
+    <string name="permission_rationale">"Permissões de contatos são necessárias para fornecer sugestões de e-mail."
     </string>
     <array name="wlan_type">
         <item>TCP</item>
@@ -16,30 +15,30 @@
         <item>HTTP</item>
         <item>HTTPS</item>
     </array>
-    <string name="title_activity_navigtion_menu">NavigtionMenu</string>
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="title_activity_navigtion_menu">MenuNavegacao</string>
+    <string name="navigation_drawer_open">Abrir menu de navegação</string>
+    <string name="navigation_drawer_close">Fechar menu de navegação</string>
     <string name="nav_header_title">Android Studio</string>
     <string name="nav_header_subtitle">android.studio@android.com</string>
-    <string name="nav_header_desc">Navigation header</string>
-    <string name="action_settings">Settings</string>
+    <string name="nav_header_desc">Cabeçalho de navegação</string>
+    <string name="action_settings">Configurações</string>
 
-    <string name="menu_home">Home</string>
-    <string name="menu_gallery">Gallery</string>
+    <string name="menu_home">Início</string>
+    <string name="menu_gallery">Galeria</string>
     <string name="menu_slideshow">Slideshow</string>
     <string name="title_activity_drawer">DrawerActivity</string>
-    <string name="proxy"><b>IP</b> : %1$s\n<b>Port</b> : %2$d\n<b>Username</b> : %3$s\n<b>Password</b> : %4$s</string>
-    <string name="connect">Connect</string>
-    <string name="copy_proxy_to_clipboard">Copy Proxy To Clipboard</string>
-    <string name="your_proxy_connection_details">Your Proxy Connection Details:</string>
-    <string name="exit">Exit</string>
-    <string name="learn_about_mobile_proxies_on_proxidize_com">HomeProxy - Standalone Mobile Proxy</string>
-    <string name="connected">Connected</string>
-    <string name="save">Save</string>
-    <string name="reset">Reset</string>
-    <string name="custom_server">Custom Server</string>
+    <string name="proxy"><b>IP</b> : %1$s\n<b>Porta</b> : %2$d\n<b>Usuário</b> : %3$s\n<b>Senha</b> : %4$s</string>
+    <string name="connect">Conectar</string>
+    <string name="copy_proxy_to_clipboard">Copiar Proxy para Área de Transferência</string>
+    <string name="your_proxy_connection_details">Detalhes da sua Conexão Proxy:</string>
+    <string name="exit">Sair</string>
+    <string name="learn_about_mobile_proxies_on_proxidize_com">HomeProxy - Proxy Móvel Autônomo</string>
+    <string name="connected">Conectado</string>
+    <string name="save">Salvar</string>
+    <string name="reset">Resetar</string>
+    <string name="custom_server">Servidor Personalizado</string>
     <string name="host">Host</string>
-    <string name="binding_port">Binding Port</string>
+    <string name="binding_port">Porta de Bind</string>
     <string name="token">Token</string>
-    <string name="starting_port">Starting Port (e.g. 28199)</string>
+    <string name="starting_port">Porta Inicial (ex: 28199)</string>
 </resources>

@@ -243,7 +243,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun showConnectionDetails() {
         val portRange = "$mRandomPort - ${mRandomPort + 14}"
-        mText = "${server.host}:$portRange:$user:$pwd"
+        mText = "${server.host}:$mRandomPort:$user:$pwd"
         val details =
             "<b>IP</b> : ${server.host}<br><b>Ports</b> : $portRange (15 endpoints)<br><b>Username</b> : $user<br><b>Password</b> : $pwd"
         binding.connection.text = mText
